@@ -4,6 +4,10 @@ import HomeScreen from '../screens/HomeScreen';
 import IOSProductsScreen from '../screens/IOSProductsScreen';
 import AndroidProductsScreen from '../screens/AndroidProductsScreen';
 import ProductDetailsScreen from '../screens/ProductDetailsScreen';
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import DrawerNavigator from './DrawerNavigator';
+import AuthGuard from '../auth/AuthGuard';
 
 // Create a Stack Navigator
 const Stack = createStackNavigator();
@@ -12,7 +16,7 @@ const Stack = createStackNavigator();
 export default function StackNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Home"
+      initialRouteName="Login"
       screenOptions={{
         headerStyle: { backgroundColor: '#fff' },
         headerTitleAlign: 'center',
@@ -20,14 +24,15 @@ export default function StackNavigator() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      {/* Home Screen */}
-      <Stack.Screen name="Home" component={HomeScreen} />
-      {/* iOS Products List */}
-      <Stack.Screen name="IOSProducts" component={IOSProductsScreen} options={{ title: 'iOS Phones' }} />
-      {/* Android Products List */}
-      <Stack.Screen name="AndroidProducts" component={AndroidProductsScreen} options={{ title: 'Android Phones' }} />
-      {/* Product Details */}
-      <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{ title: 'Product Details' }} />
+      {/* Public Screens */}
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      {/* Private Screens (Drawer) */}
+      <Stack.Screen name="Main">
+        {() => (
+          <AuthGuard fallback={<LoginScreen />}> <DrawerNavigator /> </AuthGuard>
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
