@@ -68,7 +68,10 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  const total = cart.reduce((sum, item) => sum + (item.product?.price || item.price) * item.quantity, 0);
+  const total = cart.reduce(
+    (sum, item) => sum + Number(item?.product?.price || item?.price || 0) * Number(item?.quantity || 0),
+    0
+  );
 
   if (loading) return <Loader />;
 
@@ -97,14 +100,14 @@ const CartScreen = ({ navigation }) => {
                 <Text style={styles.name}>{item.product?.name || 'Product'}</Text>
                 <QuantitySelector quantity={item.quantity} onChange={q => handleUpdate(item.id, q)} />
                 <Text style={styles.price}>
-                  ${((item.product?.price || item.price) * item.quantity).toFixed(2)}
+                  ${ (Number(item?.product?.price || item?.price || 0) * Number(item?.quantity || 0)).toFixed(2) }
                 </Text>
                 <TouchableOpacity style={styles.remove} onPress={() => handleRemove(item.id)}>
                   <Text style={{ color: '#fff' }}>Remove</Text>
                 </TouchableOpacity>
               </View>
             ))}
-            <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
+            <Text style={styles.total}>Total: ${Number(total || 0).toFixed(2)}</Text>
           </>
         )}
       </ScrollView>

@@ -1,5 +1,11 @@
 import api from './client.js';
 
+// Users
+export const adminGetUsers = async () => api.get('/admin/users');
+export const adminGetUser = async (id) => api.get(`/admin/users/${id}`);
+export const adminUpdateUser = async (id, data) => api.put(`/admin/users/${id}`, data);
+export const adminDeleteUser = async (id) => api.delete(`/admin/users/${id}`);
+
 // Products
 export const adminGetProducts = async () => api.get('/admin/products');
 export const adminCreateProduct = async (data) => api.post('/admin/products', data);

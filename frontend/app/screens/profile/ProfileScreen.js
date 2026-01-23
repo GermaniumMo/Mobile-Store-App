@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '../../utils/storage';
 import useAuth from '../../auth/useAuth';
+import { getMe } from '../../api/auth.api';
 import Loader from '../../components/Loader';
 import ErrorView from '../../components/ErrorView';
 
@@ -11,27 +13,64 @@ const ProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      setLoading(true);
-      setError('');
+  const loadUserProfile = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const userStr = await getItem('user');
+      if (userStr) {
+  if (typeof userStr === 'string') {
+    try {
+      const userData = JSON.parse(userStr);
+      setUser(userData);
+      return;
+    } catch (e) {
+      console.warn('Stored user is invalid JSON, clearing it');
+    }
+  } else if (typeof userStr === 'object') {
+    // 🔥 Handles legacy bad storage
+    setUser(userStr);
+    return;
+  }
+}
+
+      
+      // Fallback: try to fetch user from API
       try {
-        const userStr = await getItem('user');
-        if (userStr) {
-          const userData = JSON.parse(userStr);
+        const res = await getMe();
+        const userData = res.data?.data || res.data?.user;
+        if (userData) {
           setUser(userData);
+        } else {
+          setError('Failed to load profile');
+        }
+      } catch (apiErr) {
+        if (userStr) {
+          setError('Failed to parse user data');
         } else {
           setError('User not logged in');
         }
-      } catch (err) {
-        setError('Failed to load profile');
-        console.error('Profile error:', err);
-      } finally {
-        setLoading(false);
+        console.error('API error:', apiErr);
       }
-    };
+    } catch (err) {
+      setError('Failed to load profile');
+      console.error('Profile error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load profile on mount
+  useEffect(() => {
     loadUserProfile();
   }, []);
+
+  // Refresh profile when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadUserProfile();
+    }, [loadUserProfile])
+  );
 
   const handleLogout = () => {
     Alert.alert(
@@ -63,7 +102,15 @@ const ProfileScreen = ({ navigation }) => {
       </View>
 
       {error ? (
-        <ErrorView message={error} />
+        <View style={styles.errorContainer}>
+          <ErrorView message={error} />
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={loadUserProfile}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
       ) : user ? (
         <>
           <View style={styles.userCard}>
@@ -102,7 +149,7 @@ const ProfileScreen = ({ navigation }) => {
           <View style={styles.actionsSection}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('OrdersScreenMain')}
+              onPress={() => navigation.navigate('Orders')}
             >
               <Text style={styles.actionButtonText}>View My Orders</Text>
             </TouchableOpacity>
@@ -247,6 +294,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#F44336',
   },
   logoutButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  errorContainer: {
+    marginTop: 20,
+  },
+  retryButton: {
+    backgroundColor: '#1976D2',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  retryButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,

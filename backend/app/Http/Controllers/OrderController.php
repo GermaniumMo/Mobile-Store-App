@@ -52,4 +52,36 @@ class OrderController extends Controller
             return response()->json(['message' => 'Order creation failed', 'error' => $e->getMessage()], 500);
         }
     }
-}
+
+    // Admin: List all orders
+    public function adminIndex()
+    {
+        $orders = Order::with('user', 'items.product')->latest()->get();
+        return response()->json(['data' => $orders]);
+    }
+
+    // Admin: Show specific order details
+    public function adminShow($id)
+    {
+        $order = Order::with('user', 'items.product')->findOrFail($id);
+        return response()->json(['data' => $order]);
+    }
+
+    // Admin: Update order
+    public function adminUpdate(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $validated = $request->validate([
+        'status' => 'required|in:pending,processing,paid,shipped,delivered,completed,cancelled',
+    ]);
+        $order->update($validated);
+        return response()->json(['data' => $order, 'message' => 'Order updated successfully']);
+    }
+
+    // Admin: Delete order
+    public function adminDestroy($id)
+    {
+        $order = Order::findOrFail($id);
+        $order->delete();
+        return response()->json(['message' => 'Order deleted successfully']);
+    }}

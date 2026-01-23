@@ -162,6 +162,12 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         >
           <Text style={styles.buttonText}>Add to Cart</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.homeButton]} 
+          onPress={() => navigation.navigate('HomeScreen')}
+        >
+          <Text style={styles.homeButtonText}>Back to Home</Text>
+        </TouchableOpacity>
         {cartError && <ErrorView message={cartError} />}
       </View>
     </View>
@@ -307,6 +313,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  homeButton: {
+    backgroundColor: '#666',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  homeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

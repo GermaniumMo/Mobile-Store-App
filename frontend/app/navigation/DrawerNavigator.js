@@ -12,9 +12,12 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import OrdersScreen from '../screens/orders/OrdersScreen';
 import OrderDetailsScreen from '../screens/orders/OrderDetailsScreen';
 import AdminProductsScreen from '../screens/admin/AdminProductsScreen';
+import AdminProductsManagementScreen from '../screens/admin/AdminProductsManagementScreen';
 import AdminOrdersScreen from '../screens/admin/AdminOrdersScreen';
+import AdminOrdersManagementScreen from '../screens/admin/AdminOrdersManagementScreen';
 import AdminHomeScreen from '../screens/admin/AdminHomeScreen';
 import AdminUsersScreen from '../screens/admin/AdminUsersScreen';
+import AdminUsersManagementScreen from '../screens/admin/AdminUsersManagementScreen';
 import useAuth from '../auth/useAuth';
 import { TouchableOpacity, Text } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -277,7 +280,7 @@ function AdminProductsStack({ navigation }) {
     >
       <Stack.Screen
         name="AdminProductsScreenMain"
-        component={AdminProductsScreen}
+        component={AdminProductsManagementScreen}
         options={{ title: 'Manage Products' }}
       />
     </Stack.Navigator>
@@ -305,7 +308,7 @@ function AdminOrdersStack({ navigation }) {
     >
       <Stack.Screen
         name="AdminOrdersScreenMain"
-        component={AdminOrdersScreen}
+        component={AdminOrdersManagementScreen}
         options={{ title: 'Manage Orders' }}
       />
     </Stack.Navigator>
@@ -361,7 +364,7 @@ function AdminUsersStack({ navigation }) {
     >
       <Stack.Screen
         name="AdminUsersScreenMain"
-        component={AdminUsersScreen}
+        component={AdminUsersManagementScreen}
         options={{ title: 'Manage Users' }}
       />
     </Stack.Navigator>
@@ -452,6 +455,14 @@ export default function DrawerNavigator() {
       {role === 'admin' && (
         <>
           <Drawer.Screen
+            name="AdminHome"
+            component={AdminHomeStack}
+            options={{
+              drawerLabel: 'Admin - Dashboard',
+              drawerIcon: ({ color }) => <MaterialIcons name="dashboard" size={22} color={color} />,
+            }}
+          />
+          <Drawer.Screen
             name="AdminProducts"
             component={AdminProductsStack}
             options={{
@@ -465,6 +476,14 @@ export default function DrawerNavigator() {
             options={{
               drawerLabel: 'Admin - Orders',
               drawerIcon: ({ color }) => <MaterialIcons name="assignment" size={22} color={color} />,
+            }}
+          />
+          <Drawer.Screen
+            name="AdminUsers"
+            component={AdminUsersStack}
+            options={{
+              drawerLabel: 'Admin - Users',
+              drawerIcon: ({ color }) => <MaterialIcons name="people" size={22} color={color} />,
             }}
           />
         </>

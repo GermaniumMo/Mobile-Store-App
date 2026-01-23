@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { getItem, setItem, removeItem } from '../utils/storage';
+import { logout as logoutApi } from '../api/auth.api';
 
 export const AuthContext = createContext();
 
@@ -49,14 +50,19 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Call the backend logout API to invalidate token
+      await logoutApi();
+    } catch (error) {
+      console.error('Error calling logout API:', error);
+      // Continue with local logout even if API call fails
+    } finally {
+      // Clear local state and storage
       setUser(null);
       setToken(null);
       setRole('user');
       await removeItem('user');
       await removeItem('token');
       await removeItem('role');
-    } catch (error) {
-      console.error('Error during logout:', error);
     }
   };
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UserController;
 
 // Products API routes
 Route::get('/products', [ProductController::class, 'index']);
@@ -52,6 +53,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Admin API routes (admin middleware required)
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    // Users CRUD
+    Route::get('/users', [UserController::class, 'index']); // List all users
+    Route::get('/users/{id}', [UserController::class, 'show']); // Show user details
+    Route::put('/users/{id}', [UserController::class, 'update']); // Update user
+    Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete user
+
     // Products CRUD
     Route::get('/products', [ProductController::class, 'adminIndex']); // List all products (admin)
     Route::post('/products', [ProductController::class, 'store']); // Create product

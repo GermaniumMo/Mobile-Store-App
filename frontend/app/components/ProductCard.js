@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const ProductCard = ({ product, onPress }) => {
+  const [imageError, setImageError] = useState(false);
+  
   const displayPrice = product.discount_price || product.price;
   const originalPrice = product.price;
   
@@ -11,13 +13,25 @@ const ProductCard = ({ product, onPress }) => {
     imageUri = `http://127.0.0.1:8000/storage/${imageUri}`;
   }
   
+  // Use gray placeholder if no image or image failed to load
+  const finalImageUri = imageError || !imageUri ? null : imageUri;
+  
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image
-        source={{ uri: imageUri }}
-        style={styles.image}
-        onError={(e) => console.log('Image error:', e.nativeEvent.error)}
-      />
+      {finalImageUri ? (
+        <Image
+          source={{ uri: finalImageUri }}
+          style={styles.image}
+          onError={(e) => {
+            console.log('Image error:', e.nativeEvent.error);
+            setImageError(true);
+          }}
+        />
+      ) : (
+        <View style={[styles.image, styles.placeholderImage]}>
+          <Text style={styles.placeholderText}>No Image</Text>
+        </View>
+      )}
       <View style={styles.content}>
         <Text style={styles.name} numberOfLines={2}>
           {product.name}
@@ -26,9 +40,9 @@ const ProductCard = ({ product, onPress }) => {
           {product.brand && product.brand[0] ? product.brand[0] : 'N/A'}
         </Text>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>${displayPrice.toFixed(2)}</Text>
+          <Text style={styles.price}>${Number(displayPrice || 0).toFixed(2)}</Text>
           {product.discount_price && (
-            <Text style={styles.originalPrice}>${originalPrice.toFixed(2)}</Text>
+            <Text style={styles.originalPrice}>${Number(originalPrice || 0).toFixed(2)}</Text>
           )}
         </View>
         <View style={styles.ratingContainer}>
@@ -60,6 +74,16 @@ const styles = StyleSheet.create({
     height: 150,
     resizeMode: 'cover',
     backgroundColor: '#f0f0f0',
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+  },
+  placeholderText: {
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '600',
   },
   content: {
     padding: 12,

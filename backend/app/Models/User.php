@@ -73,4 +73,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
+
+    /**
+     * Check if user is an admin
+     */
+    public function is_admin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Accessor for admin status (for middleware compatibility)
+     */
+    public function getIsAdminAttribute()
+    {
+        return $this->role === 'admin';
+    }
 }

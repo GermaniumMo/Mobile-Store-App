@@ -59,7 +59,10 @@ const IOSProductsScreen = ({ navigation }) => {
         renderItem={({ item }) => (
           <ProductCard product={item} onPress={() => navigation.navigate('ProductDetails', { id: item.id })} />
         )}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 24 }}
+        scrollEnabled={true}
       />
     </View>
   );
@@ -69,6 +72,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+  },
+  columnWrapper: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   headerContainer: {
     paddingTop: 16,

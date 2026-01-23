@@ -57,7 +57,7 @@ const OrdersScreen = ({ navigation }) => {
             >
               <Text style={styles.orderId}>Order #{item.id}</Text>
               <Text style={styles.status}>Status: {item.status}</Text>
-              <Text style={styles.total}>Total: ${(item.total || 0).toFixed(2)}</Text>
+              <Text style={styles.total}>Total: ${Number(item?.total || 0).toFixed(2)}</Text>
               <Text style={styles.date}>
                 {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'}
               </Text>

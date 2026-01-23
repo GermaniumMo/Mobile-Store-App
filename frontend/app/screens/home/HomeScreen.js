@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import { getFeaturedProducts, getProducts } from '../../api/product.api';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
+import { getFeaturedProducts, getProducts, searchProducts } from '../../api/product.api';
 import Loader from '../../components/Loader';
 import ErrorView from '../../components/ErrorView';
 import ProductCard from '../../components/ProductCard';
@@ -12,6 +12,7 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('featured');
+  const [search, setSearch] = useState('');
   const [filters] = useState([
     { id: 'featured', label: 'Featured' },
     { id: 'all', label: 'All Products' },
@@ -24,9 +25,11 @@ const HomeScreen = ({ navigation }) => {
       setLoading(true);
       setError('');
       try {
-        // Load all products first
         let response;
-        if (selectedFilter === 'featured') {
+        // If search is active, use search API
+        if (search) {
+          response = await searchProducts(search);
+        } else if (selectedFilter === 'featured') {
           response = await getFeaturedProducts();
         } else if (selectedFilter === 'all') {
           response = await getProducts();
@@ -37,11 +40,13 @@ const HomeScreen = ({ navigation }) => {
         const data = response.data.data || response.data.products || [];
         let filteredData = Array.isArray(data) ? data : [];
 
-        // Apply platform filter if needed
-        if (selectedFilter === 'ios') {
-          filteredData = filteredData.filter(p => p.platform === 'ios');
-        } else if (selectedFilter === 'android') {
-          filteredData = filteredData.filter(p => p.platform === 'android');
+        // Apply platform filter only if not searching
+        if (!search) {
+          if (selectedFilter === 'ios') {
+            filteredData = filteredData.filter(p => p.platform === 'ios');
+          } else if (selectedFilter === 'android') {
+            filteredData = filteredData.filter(p => p.platform === 'android');
+          }
         }
 
         setProducts(filteredData);
@@ -54,7 +59,7 @@ const HomeScreen = ({ navigation }) => {
       }
     };
     fetchProducts();
-  }, [selectedFilter]);
+  }, [selectedFilter, search]);
 
   // Extract images for carousel - build full URLs if needed
   const images = products
@@ -90,48 +95,67 @@ const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+  const renderHeader = () => (
+    <>
       <View style={styles.headerSection}>
         <Text style={styles.header}>Mobile Store</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search products..."
+          value={search}
+          onChangeText={setSearch}
+        />
         {loading ? <Loader /> : null}
         {error ? <ErrorView message={error} /> : null}
       </View>
-
       {/* Filters */}
-      <View style={styles.filterContainer}>
+      <View style={styles.filterContainer} pointerEvents="box-none">
         <FlatList
+        removeClippedSubviews={false}
           horizontal
           data={filters}
           keyExtractor={item => item.id}
           renderItem={({ item }) => renderFilter(item)}
-          scrollEnabled={false}
+          
           contentContainerStyle={styles.filterList}
         />
       </View>
-
       {/* Carousel for featured products */}
       {!loading && images.length > 0 && selectedFilter === 'featured' ? (
         <Carousel images={images} />
       ) : null}
+    </>
+  );
 
-      {/* Products Grid */}
-      <View style={styles.productsGrid}>
-        {!loading && products.length > 0 ? products.map(item => (
-          <View key={item.id} style={styles.productColumn}>
-            <ProductCard
-              product={item}
-              onPress={() => navigation.navigate('ProductDetails', { id: item.id })}
-            />
-          </View>
-        )) : null}
-        {!loading && products.length === 0 && (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No products found</Text>
-          </View>
+  return (
+    <View style={styles.container}>
+      <FlatList
+        removeClippedSubviews={false}
+        data={products}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={item}
+            onPress={() => navigation.navigate('ProductDetails', { id: item.id })}
+          />
         )}
-      </View>
-    </ScrollView>
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        keyboardShouldPersistTaps="handled"
+        // Make FlatList fill available height so it can scroll on web
+        style={styles.list}
+        // Put header inside FlatList so it scrolls together on web
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          !loading && products.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No products found</Text>
+            </View>
+          ) : null
+        }
+      />
+    </View>
   );
 };
 
@@ -139,14 +163,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    minHeight: '100vh',
+    
   },
-  scrollContent: {
-    paddingTop: 16,
-    paddingBottom: 24,
+  columnWrapper: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   headerSection: {
     paddingHorizontal: 16,
     marginBottom: 16,
+    paddingTop: 16,
   },
   header: {
     fontSize: 28,
@@ -154,6 +181,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
     color: '#222',
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
   },
   filterContainer: {
     marginHorizontal: 8,
@@ -184,16 +220,6 @@ const styles = StyleSheet.create({
   filterButtonTextActive: {
     color: '#fff',
   },
-  productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 8,
-  },
-  productColumn: {
-    width: '50%',
-    paddingHorizontal: 4,
-    marginBottom: 8,
-  },
   emptyContainer: {
     width: '100%',
     paddingVertical: 32,
@@ -204,6 +230,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     fontStyle: 'italic',
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    paddingBottom: 32,
+    flexGrow: 1,
   },
 });
 

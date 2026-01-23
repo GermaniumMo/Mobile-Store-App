@@ -8,6 +8,7 @@ const AdminOrdersScreen = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -23,6 +24,19 @@ const AdminOrdersScreen = () => {
   };
 
   useEffect(() => { fetchOrders(); }, []);
+
+  const statuses = [
+    { id: 'all', label: 'All' },
+    { id: 'pending', label: 'Pending' },
+    { id: 'processing', label: 'Processing' },
+    { id: 'paid', label: 'Paid' },
+    { id: 'shipped', label: 'Shipped' },
+    { id: 'delivered', label: 'Delivered' },
+    { id: 'completed', label: 'Completed' },
+    { id: 'cancelled', label: 'Cancelled' },
+  ];
+
+  const filteredOrders = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
   const handleDelete = async (id) => {
     Alert.alert('Delete Order', 'Are you sure?', [
@@ -52,26 +66,58 @@ const AdminOrdersScreen = () => {
       <Text style={styles.header}>Admin: Orders</Text>
       {loading && <Loader />}
       {error && <ErrorView message={error} />}
+      
+      {/* Status Filter Buttons */}
+      <View style={styles.filterSection}>
+        <View style={styles.filterButtons}>
+          {statuses.map(status => (
+            <TouchableOpacity
+              key={status.id}
+              style={[
+                styles.filterButton,
+                filter === status.id && styles.filterButtonActive
+              ]}
+              onPress={() => setFilter(status.id)}
+            >
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  filter === status.id && styles.filterButtonTextActive
+                ]}
+              >
+                {status.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
       <FlatList
-        data={orders}
+        data={filteredOrders}
         keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text style={styles.orderId}>Order #{item.id}</Text>
             <Text style={styles.status}>Status: {item.status}</Text>
             <Text style={styles.total}>Total: ${item.total}</Text>
-            <View style={{ flexDirection: 'row', marginTop: 8 }}>
+            <View style={styles.buttonsContainer}>
               <TouchableOpacity style={styles.update} onPress={() => handleUpdateStatus(item.id, 'processing')}>
-                <Text style={{ color: '#fff' }}>Processing</Text>
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Processing</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.update} onPress={() => handleUpdateStatus(item.id, 'paid')}>
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Paid</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.update} onPress={() => handleUpdateStatus(item.id, 'shipped')}>
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Shipped</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.update} onPress={() => handleUpdateStatus(item.id, 'completed')}>
-                <Text style={{ color: '#fff' }}>Completed</Text>
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Completed</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.update} onPress={() => handleUpdateStatus(item.id, 'cancelled')}>
-                <Text style={{ color: '#fff' }}>Cancelled</Text>
+              <TouchableOpacity style={styles.cancel} onPress={() => handleUpdateStatus(item.id, 'cancelled')}>
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Cancelled</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.delete} onPress={() => handleDelete(item.id)}>
-                <Text style={{ color: '#fff' }}>Delete</Text>
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -94,6 +140,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
     textAlign: 'center',
+  },
+  filterSection: {
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  filterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  filterButtonActive: {
+    backgroundColor: '#1976D2',
+    borderColor: '#1976D2',
+  },
+  filterButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  filterButtonTextActive: {
+    color: '#fff',
   },
   item: {
     backgroundColor: '#fff',
@@ -120,19 +196,32 @@ const styles = StyleSheet.create({
     color: '#424242',
     marginVertical: 4,
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 10,
+  },
   delete: {
     backgroundColor: '#D32F2F',
     padding: 8,
     borderRadius: 6,
     alignItems: 'center',
-    marginTop: 6,
+    justifyContent: 'center',
+  },
+  cancel: {
+    backgroundColor: '#F57C00',
+    padding: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   update: {
     backgroundColor: '#1976D2',
     padding: 8,
     borderRadius: 6,
     alignItems: 'center',
-    marginRight: 6,
+    justifyContent: 'center',
   },
 });
 

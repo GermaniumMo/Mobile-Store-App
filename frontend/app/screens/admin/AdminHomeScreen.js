@@ -39,7 +39,7 @@ const AdminHomeScreen = ({ navigation }) => {
   // Calculate metrics
   const totalProducts = products.length;
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const totalRevenue = orders.reduce((sum, order) => sum + Number(order?.total || 0), 0);
   const lowStockProducts = products.filter(p => p.stock < 5).length;
 
   // Get latest 10 products for table
@@ -94,14 +94,14 @@ const AdminHomeScreen = ({ navigation }) => {
           <View style={styles.actionsGrid}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => navigation.navigate('AdminProductsScreenMain')}
+              onPress={() => navigation.navigate('AdminProducts')}
             >
               <MaterialIcons name="add" size={28} color="#fff" />
               <Text style={styles.actionButtonText}>Products</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => navigation.navigate('AdminOrdersScreenMain')}
+              onPress={() => navigation.navigate('AdminOrders')}
             >
               <MaterialIcons name="shopping-bag" size={28} color="#fff" />
               <Text style={styles.actionButtonText}>Orders</Text>
@@ -160,7 +160,7 @@ const AdminHomeScreen = ({ navigation }) => {
                   {product.name}
                 </Text>
                 <Text style={styles.tableCell}>{product.stock}</Text>
-                <Text style={styles.tableCell}>${product.price.toFixed(2)}</Text>
+                <Text style={styles.tableCell}>${Number(product.price || 0).toFixed(2)}</Text>
               </View>
             ))}
           </View>
