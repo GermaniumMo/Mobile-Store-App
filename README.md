@@ -64,3 +64,7 @@ Common tips:
 - For mobile device testing, ensure the device and dev machine are on the same network, or use `--tunnel`.
 
 That's it — backend on port 8000 and Expo serving the frontend. If you'd like, I can add a one-line script to the root `package.json` to start both services together.
+
+admin account:
+  admin@admin.com
+  admin1234
